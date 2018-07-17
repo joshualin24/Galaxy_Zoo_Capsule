@@ -2,7 +2,7 @@ This project is developed for Python3.5 interpreter on linux machine. Using Anac
 
 To install dependencies, simply run:
 
-```pip install -r requirment.txt```
+```pip install -r requirement.txt```
 
 This project uses TensorFlow, a machine learning library developed and maintained by Google in principle.
 
@@ -47,15 +47,3 @@ Below is another learning curve for 1e-3 learning rate achieve achieve the same 
 ![](./fig/err_test2.png)
 
 In comparison to [https://github.com/yhyu13/tf_CapsNet](https://github.com/laodar/tf_CapsNet), which is a project done on synthesized hand written digits images and is the project I mimicked , the CapsNet achieve 10% error rate on test data set. The lesson learned is that  CpasNet is capable of recognizing elliptical and spiral galaxies when they overlapped but not as good as recognizing hand written digits. One challenge I realized was the reconstruction is particularly hard for large image input, thus, this model is not trained with reconstruction error.
-
-## TO DO
-
-- [ ] Spiral, elliptical, irregular galaxies classification (and more diversed sythesized images)
-- [ ] Find best threshold for FS/FN
-- [ ] Train with AlexNet
-- [ ] Change the method to generate training data: should be
-
-(i) spiral only (no synthesized image)
-(ii) elliptical only (no synthesized image)
-(iii) synthesized images
-(iv) false negative examples
