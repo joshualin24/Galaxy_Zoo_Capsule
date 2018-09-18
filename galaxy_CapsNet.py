@@ -24,7 +24,7 @@ class CapsNet(object):
                       + (1.0 - self.is_multi_galaxy) * tf.ones_like(y_composed[:,0,0])
 
         v_digit,c = self.get_CapsNet(x_composed)
-        length_v = tf.reduce_sum(v_digit ** 2.0, axis=-1) ** 0.5  # length_v with shape [batch_size,10]
+        self.length_v = tf.reduce_sum(v_digit ** 2.0, axis=-1) ** 0.5  # self.length_v with shape [batch_size,10]
 
         x_rec_a = self.get_deconv_decoder(v_digit * y_a)
         x_rec_b = self.get_deconv_decoder(v_digit * y_b,reuse=True)
@@ -33,8 +33,8 @@ class CapsNet(object):
         self.loss_rec = (loss_rec_a + loss_rec_b) / 2.0
         self.x_recs = [x_rec_a,x_rec_b]
         self.x_sample = self.get_deconv_decoder(self.h_sample * self.y_sample[:, :, None], reuse=True)
-        self.loss_cls = tf.reduce_sum(y_composed[:,:,0] * tf.maximum(0.0, 0.9 - length_v) ** 2.0
-                                      + 0.5 * (1.0 - y_composed[:,:,0]) * tf.maximum(0.0, length_v - 0.1) ** 2.0,axis=-1)
+        self.loss_cls = tf.reduce_sum(y_composed[:,:,0] * tf.maximum(0.0, 0.9 - self.length_v) ** 2.0
+                                      + 0.5 * (1.0 - y_composed[:,:,0]) * tf.maximum(0.0, self.length_v - 0.1) ** 2.0,axis=-1)
         self.loss_cls = tf.reduce_sum(self.loss_cls*valid_mask)/tf.reduce_sum(valid_mask)
         self.loss_rec = tf.reduce_sum(self.loss_rec*valid_mask)/tf.reduce_sum(valid_mask)
         self.loss = self.loss_cls # + 0.0005*self.loss_rec
@@ -46,12 +46,12 @@ class CapsNet(object):
         self.train = tf.group(*train_ops)
 
         if is_multi_galaxy:
-            self.accuracy = tf.reduce_mean(tf.cast(tf.nn.in_top_k(length_v,tf.argmax(tf.squeeze(y_a), 1),k=1),tf.float32))+\
-                            tf.reduce_mean(tf.cast(tf.nn.in_top_k(length_v,tf.argmax(tf.squeeze(y_b), 1),k=1),tf.float32))
+            self.accuracy = tf.reduce_mean(tf.cast(tf.nn.in_top_k(self.length_v,tf.argmax(tf.squeeze(y_a), 1),k=1),tf.float32))+\
+                            tf.reduce_mean(tf.cast(tf.nn.in_top_k(self.length_v,tf.argmax(tf.squeeze(y_b), 1),k=1),tf.float32))
             self.accuracy /= 2.0
             #this may be different from the paper
         else:
-            correct_prediction = tf.equal(tf.argmax(y_composed[:,:,0], 1), tf.argmax(length_v, 1))
+            correct_prediction = tf.equal(tf.argmax(y_composed[:,:,0], 1), tf.argmax(self.length_v, 1))
             self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
     def get_CapsNet(self,x,reuse = False):
